@@ -162,32 +162,7 @@ PluginComponent {
         defaultValue: ""
     }
 
-    PluginGlobalVar {
-        id: globalIpcOwnerId
-        varName: "ipcOwnerId"
-        defaultValue: ""
-    }
-
     property string instanceId: Math.random().toString(36).substring(2)
-
-    function claimIpcOwnership() {
-        if (!globalIpcOwnerId.value)
-            globalIpcOwnerId.set(root.instanceId);
-    }
-
-    Component.onCompleted: claimIpcOwnership()
-
-    Component.onDestruction: {
-        if (globalIpcOwnerId.value === root.instanceId)
-            globalIpcOwnerId.set("");
-    }
-
-    Connections {
-        target: globalIpcOwnerId
-        function onValueChanged() {
-            root.claimIpcOwnership();
-        }
-    }
 
     Timer {
         id: pomodoroTimer
@@ -311,36 +286,33 @@ PluginComponent {
         return "coffee";
     }
 
-    Loader {
-        active: globalIpcOwnerId.value === root.instanceId
-        sourceComponent: IpcHandler {
-            function resetTimer(): string {
-                root.resetTimer();
-                return "POMDORO_TIME_RESET_SUCCESS";
-            }
-
-            function toggleTimer(): string {
-                root.toggleTimer();
-                return globalIsRunning.value ? "Timer is running" : "Timer is paused";
-            }
-
-            function startWork(): string {
-                root.startWork(true);
-                return "POMODORO_WORK_STARTED";
-            }
-
-            function startShortBreak(): string {
-                root.startShortBreak(true);
-                return "POMODORO_SHORT_BREAK_STARTED";
-            }
-
-            function startLongBreak(): string {
-                root.startLongBreak(true);
-                return "POMODORO_LONG_BREAK_STARTED";
-            }
-
-            target: "pomodoroTimer"
+    IpcHandler {
+        function resetTimer(): string {
+            root.resetTimer();
+            return "POMDORO_TIME_RESET_SUCCESS";
         }
+
+        function toggleTimer(): string {
+            root.toggleTimer();
+            return globalIsRunning.value ? "Timer is running" : "Timer is paused";
+        }
+
+        function startWork(): string {
+            root.startWork(true);
+            return "POMODORO_WORK_STARTED";
+        }
+
+        function startShortBreak(): string {
+            root.startShortBreak(true);
+            return "POMODORO_SHORT_BREAK_STARTED";
+        }
+
+        function startLongBreak(): string {
+            root.startLongBreak(true);
+            return "POMODORO_LONG_BREAK_STARTED";
+        }
+
+        target: "pomodoroTimer"
     }
 
     Timer {
